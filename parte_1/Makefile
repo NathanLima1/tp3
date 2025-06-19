@@ -23,7 +23,10 @@ obj/word.o: word.c word.h
 folders:
 obj:
 		mkdir -p obj
-	
+
+run: all
+	./$(TARGET)
+
 clean:
 		rm -f obj/*.o $(TARGET)
-		rm - r obj
+		rm -r obj

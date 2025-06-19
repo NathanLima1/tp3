@@ -1,18 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-typedef struct tableItem{
-    char *key;
-    int value;
-    struct tableItem *next;
-
-} tableItem;
-
-typedef struct {
-    tableItem **data;
-    int size;
-} Table;
+#include "hash-table.h"
 
 unsigned int hash(char *s) {
     int len = strlen(s);
@@ -63,6 +52,20 @@ void printTableFormatted(Table *t) {
     }
 
     printf("+--------+----------------------+--------+\n");
+}
+
+void freeTableItem(tableItem *item) {
+    if (item == NULL) return;
+    freeTableItem(item->next);
+    free(item->key);
+    free(item);
+}
+void freeTable(Table *t) {
+    for (int i = 0; i < t->size; i++) {
+        freeTableItem(t->data[i]);
+    }
+    free(t->data);
+    free(t);
 }
 
 int main() {
