@@ -38,6 +38,21 @@ int insert(Table *t, char *key) {
     t->data[index] = item;
 }
 
+void freeTableItem(tableItem *item) {
+    if (item == NULL) return;
+    freeTableItem(item->next);
+    free(item->key);
+    free(item);
+}
+
+void freeTable(Table *t) {
+    for (int i = 0; i < t->size; i++) {
+        freeTableItem(t->data[i]);
+    }
+    free(t->data);
+    free(t);
+}
+
 void printTableFormatted(Table *t) {
     printf("+--------+----------------------+--------+\n");
     printf("| Index  | Key                  | Value  |\n");
@@ -54,29 +69,9 @@ void printTableFormatted(Table *t) {
     printf("+--------+----------------------+--------+\n");
 }
 
-void freeTableItem(tableItem *item) {
-    if (item == NULL) return;
-    freeTableItem(item->next);
-    free(item->key);
-    free(item);
-}
-void freeTable(Table *t) {
-    for (int i = 0; i < t->size; i++) {
-        freeTableItem(t->data[i]);
-    }
-    free(t->data);
-    free(t);
-}
-
-int main() {
-    Table *t = initTable(5);
-    insert(t, "pato\0");
-    insert(t, "pato\0");
-    insert(t, "pato\0");
-    insert(t, "pato\0");
-    insert(t, "pato\0");
-    insert(t, "topa\0");
-    insert(t, "a\0");
-    printTableFormatted(t);
-    return 0;
-}
+// int main() {
+//     Table *t = initTable(5);
+//     insert(t, "pato\0");
+//     printTableFormatted(t);
+//     return 0;
+// }
