@@ -9,6 +9,9 @@
 #include "file.h"
 #include "word.h"
 
+#define MAX_LEN 10000
+#define MAX_OCCURRENCES 1000
+
 int main(int argc, char *argv[]){
     FILE* fp1 = stdin;
     FILE* fp2 = stdin;
@@ -63,37 +66,38 @@ int main(int argc, char *argv[]){
     struct rusage usage_start, usage_end;
     getrusage(RUSAGE_SELF, &usage_start);
 
-    // define distância de edição aceitavel
-    int k = 2;
+    char *text = malloc(MAX_LEN * sizeof(char));
+    if (!fgets(text, MAX_LEN, fp1)) {
+        fprintf(stderr, "Erro ao ler o texto do arquivo.\n");
+        fclose(fp1);
+        fclose(fp2);
+        fclose(fp_out);
+        return 1;
+    }
+    text[strcspn(text, "\n")] = 0;
+    fclose(fp1);
 
-    // quantidade de palavras padrao
-    int lines = count_lines(fp2);
-    Padrao* padroes = init_padroes(lines);
 
-    char* padrao;
-    int pos1 = 0;
-    printf("Não entrou ainda\n");
-    while((padrao = read_word(fp2, &pos1)) != NULL){
-        printf("%s\n", padrao);
-        char* word;
-        int pos2 = 0;
-        int n = strlen(padrao);
-        padroes[pos1].word = padrao;
-        fprintf(fp_out, "%s\n", padrao);
+    char pattern[MAX_LEN];
+    while (fgets(pattern, MAX_LEN, fp2)) {
+        pattern[strcspn(pattern, "\n")] = 0;
 
-        // percorre o arquivo em busca de ocorrencias do padrão
-        while((word = read_word(fp1, &pos2)) != NULL){
-            printf("%s\n", word);
-            int m = strlen(word);
-            int** dp = init_dp(n, m);
-            int dist = levenshtein(dp, padrao, word, n, m);
-            if(dist <= k){
-                write_index(fp_out, pos1, pos2);
-            }
-            free_dp(dp, n);
+        for (int k = 0; k <= 3; k++) {
+            int positions[MAX_OCCURRENCES];
+            int count;
+            levenshtein(text, pattern, k, positions, &count);
+
+            fprintf(fp_out, "%s", pattern);
+            for (int i = 0; i < count; i++)
+                fprintf(fp_out, " %d", positions[i]);
+            fprintf(fp_out, "\n");
+
         }
     }
-    free_padroes(padroes, lines);
+
+    free(text);
+    fclose(fp2);
+    fclose(fp_out);
 
     // Termina medição
     gettimeofday(&end_time, NULL);
