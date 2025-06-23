@@ -69,6 +69,19 @@ void printTableFormatted(Table *t) {
     printf("+--------+----------------------+--------+\n");
 }
 
+tableItem *get_item(Table *t, const char *key) {
+    int index = hash((char *)key) % t->size;
+    tableItem *curr = t->data[index];
+
+    while (curr) {
+        if (strcmp(curr->key, key) == 0) {
+            return curr;
+        }
+        curr = curr->next;
+    }
+    return NULL; // não encontrado
+}
+
 // int main() {
 //     Table *t = initTable(5);
 //     insert(t, "pato\0");
