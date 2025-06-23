@@ -18,9 +18,9 @@ int shift_and(char *s1, char *s2, int n, int m, int k) {
             int tmp = states[j];
             states[j] = ((states[j] << 1) | 1) & masks[(int)s1[i]];
 
-            states[j] |= (prev_state << 1); // Inserção, avança uma casa na verificação
-            states[j] |= prev_state; // Deleção, apenas ignora o atual, preservando o anterior (Sem as máscaras)
-            states[j] |= states[j - 1]; // Troca, inora o atual e preserva o anterior (Já com as máscaras, exemplo para "testem" e "testam")
+            states[j] |= (prev_state << 1); // Deleção, avança uma casa na verificação, pula a verificação antiga e deixa para o próximo and
+            states[j] |= prev_state; // Inserção, preserva o estado anterior, ignorando a verificação atual
+            states[j] |= (states[j - 1] << 1); // Troca, avança no estado atual para ignorar o próximo carácter (será lido futuramente)
 
             prev_state = tmp;
         }
@@ -33,5 +33,18 @@ int shift_and(char *s1, char *s2, int n, int m, int k) {
     }
 
     free(states);
+    return 0;
+}
+
+int main() {
+    char *text = "bbbbaabbb\0";
+    char *padrao = "aa";
+
+    int n = strlen(text);
+    int m = strlen(padrao);
+    int k = 1;
+
+    shift_and(text, padrao, n, m, k);
+
     return 0;
 }
