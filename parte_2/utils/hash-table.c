@@ -3,6 +3,12 @@
 #include <string.h>
 #include "hash-table.h"
 
+char *strdup(const char *s) {
+    char *copy = malloc(strlen(s) + 1);
+    if (copy) strcpy(copy, s);
+    return copy;
+}
+
 unsigned int hash(char *s) {
     int len = strlen(s);
     unsigned int hash = 1;
@@ -19,14 +25,42 @@ Table *initTable(int size) {
     t->size = size;
     return t;
 }
-int insert(Table *t, char *key) {
+
+void insert_with_value(Table *t, const char *key, int value) {
+    int index = hash((char *)key) % t->size;
+    tableItem *item = malloc(sizeof(tableItem));
+    item->key = strdup(key);
+    item->value = value;
+    item->valueStr = NULL; // ainda não tem código
+    item->next = t->data[index];
+    t->data[index] = item;
+}
+
+void insert_with_string(Table *t, const char *key, const char *valueStr) {
+    int index = hash((char *)key) % t->size;
+    tableItem *item = malloc(sizeof(tableItem));
+    item->key = strdup(key);
+    item->value = 0;
+    item->valueStr = strdup(valueStr); // salva o código Huffman
+    item->next = t->data[index];
+    t->data[index] = item;
+}
+
+void update_value(Table *t, const char *key, int delta) {
+    tableItem *item = get_item(t, key);
+    if (item) {
+        item->value += delta;
+    }
+}
+
+void insert(Table *t, char *key) {
     int index = hash(key) % t->size;
     tableItem *crr_item = t->data[index];
 
     while (crr_item != NULL) {
         if (strcmp(crr_item->key, key) == 0) {
             crr_item->value++;
-            return 0;
+            return;
         }
         crr_item = crr_item->next;
     }
@@ -34,6 +68,7 @@ int insert(Table *t, char *key) {
     tableItem *item = malloc(sizeof(tableItem));
     item->key = strdup(key);
     item->value = 1;
+    item->valueStr = NULL;
     item->next = t->data[index];
     t->data[index] = item;
 }
@@ -42,8 +77,10 @@ void freeTableItem(tableItem *item) {
     if (item == NULL) return;
     freeTableItem(item->next);
     free(item->key);
+    if (item->valueStr) free(item->valueStr);
     free(item);
 }
+
 
 void freeTable(Table *t) {
     for (int i = 0; i < t->size; i++) {
