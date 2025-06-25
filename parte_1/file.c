@@ -1,42 +1,46 @@
 #include "file.h"
 
-void write_index(FILE* fp, int pos, char index){
-    fseek(fp, pos, SEEK_SET);
-    fputc(index, fp);
-}
 
-char* read_word(FILE* fp, int* pos){
-    int len = 100;
-    int c;
-    int i = 0;
-
-    char* word = malloc(len);
-    fseek(fp, *pos, SEEK_SET);
-
-    while ((c = fgetc(fp)) != EOF && c != ' ' && c != '\n' && c != '\r') {
-        if(i >= len - 1){
-            len *= 2;
-            char* temp = realloc(word, len);
-            if (temp == NULL) {
-                free(word);
-                return NULL;
-            }
-            word = temp;
-        }
-        word[i++] = (char)c;
+// Função auxiliar para ler todo o conteúdo de um arquivo
+char* read_file(const char* nome) {
+    FILE* f = fopen(nome, "rb");
+    if (!f) {
+        perror("Erro ao abrir arquivo");
+        return NULL;
     }
-    word[i] = '\0';
-    *pos = ftell(fp);
-    return word;
-}
 
-int count_lines(FILE* fp){
-    int lines = 0;
-    int c;
-    while ((c = fgetc(fp)) != EOF) {
-        if (c == '\n') {
-            lines++;
+    fseek(f, 0, SEEK_END);
+    long tam = ftell(f);
+    rewind(f);
+
+    if (tam == 0) { // arquivo vazio
+        fclose(f);
+        char* vazio = malloc(1);
+        if (vazio) vazio[0] = '\0';
+        return vazio;
+    }
+
+    char* buf = malloc(tam + 1);
+    if (!buf) {
+        perror("Erro de alocação");
+        fclose(f);
+        return NULL;
+    }
+
+    size_t lidos = fread(buf, 1, tam, f);
+    if (lidos != tam) {
+        if (feof(f)) {
+            // fim de arquivo atingido - talvez arquivo truncado
+            fprintf(stderr, "Aviso: arquivo truncado ou leitura incompleta\n");
+        } else {
+            perror("Erro na leitura do arquivo");
+            free(buf);
+            fclose(f);
+            return NULL;
         }
     }
-    return lines;
+
+    buf[lidos] = '\0';
+    fclose(f);
+    return buf;
 }

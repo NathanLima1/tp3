@@ -1,10 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
-
-char* read_word(FILE* fp, int* pos);
-
-int count_lines(FILE* fp);
-
-void write_index(FILE* fp, int pos, char index);
+char* read_file(const char* filename);

@@ -9,101 +9,82 @@
 #include "file.h"
 #include "word.h"
 
-#define MAX_LEN 10000
-#define MAX_OCCURRENCES 1000
+#define MAX_PADRAO 256
 
-int main(int argc, char *argv[]){
-    FILE* fp1 = stdin;
-    FILE* fp2 = stdin;
-    FILE* fp_out = stdin;
-
+int main(int argc, char *argv[]) {
     struct timeval start_time, end_time;
-    gettimeofday(&start_time, NULL);
-
-    int option = 1;
+    struct rusage usage_start, usage_end;
 
     char* input_file1 = "entrada1.txt";
     char* input_file2 = "entrada2.txt";
     char* output_file = "saida.txt";
+    int option = 1; // 1 = programação dinâmica, 2 = shift-and (ainda não usado)
     int opt;
 
-    while((opt = getopt(argc, argv, "a:b:o:f:")) > 0){
-        switch(opt){
-            case 'a':
-                input_file1 = optarg;
-                break;
-            case 'b': 
-                input_file2 = optarg;
-                break;
-            case 'o':
-                output_file = optarg;
-                break;
+    while ((opt = getopt(argc, argv, "a:b:o:f:")) > 0) {
+        switch (opt) {
+            case 'a': input_file1 = optarg; break;
+            case 'b': input_file2 = optarg; break;
+            case 'o': output_file = optarg; break;
             case 'f':
                 option = atoi(optarg);
-                if(option == 2){
+                if (option == 2)
                     printf("Shift-And selecionado.\n");
-                }else{
+                else
                     printf("Programação dinâmica selecionado.\n");
-                }
                 break;
             default:
-                printf("Entrada inválida, use -a:-b:-o:-f\n");
-                return 0;
+                fprintf(stderr, "Uso: %s -a <texto> -b <padroes> -o <saida> -f <1|2>\n", argv[0]);
+                return 1;
         }
     }
 
-    fp1 = fopen(input_file1, "r");
-    fp2 = fopen(input_file2, "r");
-
-    if(fp1 == NULL || fp2 == NULL){
-        perror("Erro ao abrir o(s) arquivo(s)");
-        return 1;
-    }
-
-    fp_out = fopen(output_file, "w");
-
-    // Comeca a medir o tempo de usuario
-    struct rusage usage_start, usage_end;
+    gettimeofday(&start_time, NULL);
     getrusage(RUSAGE_SELF, &usage_start);
 
-    char *text = malloc(MAX_LEN * sizeof(char));
-    if (!fgets(text, MAX_LEN, fp1)) {
-        fprintf(stderr, "Erro ao ler o texto do arquivo.\n");
-        fclose(fp1);
-        fclose(fp2);
-        fclose(fp_out);
+    FILE *fpads = fopen(input_file2, "r");
+    FILE *fout  = fopen(output_file, "w");
+    if (!fpads || !fout) {
+        perror("Erro ao abrir arquivos de entrada ou saída");
         return 1;
     }
-    text[strcspn(text, "\n")] = 0;
-    fclose(fp1);
 
-
-    char pattern[MAX_LEN];
-    while (fgets(pattern, MAX_LEN, fp2)) {
-        pattern[strcspn(pattern, "\n")] = 0;
-
-        for (int k = 0; k <= 3; k++) {
-            int positions[MAX_OCCURRENCES];
-            int count;
-            levenshtein(text, pattern, k, positions, &count);
-
-            fprintf(fp_out, "%s", pattern);
-            for (int i = 0; i < count; i++)
-                fprintf(fp_out, " %d", positions[i]);
-            fprintf(fp_out, "\n");
-
-        }
+    char *texto = read_file(input_file1); // função definida em file.c
+    if (!texto) {
+        fprintf(stderr, "Erro ao ler o texto\n");
+        return 1;
     }
 
-    free(text);
-    fclose(fp2);
-    fclose(fp_out);
+    int k = 0;
+    size_t n = strlen(texto);
+    int *pos = malloc((n + 1) * sizeof(int));
+    if (!pos) {
+        perror("malloc");
+        return 1;
+    }
 
-    // Termina medição
+    char linha[MAX_PADRAO];
+    while (fgets(linha, sizeof(linha), fpads)) {
+        linha[strcspn(linha, "\r\n")] = '\0'; // remove \n ou \r
+        if (*linha == '\0') continue;
+
+        int cont = 0;
+        levenshtein(texto, linha, k, pos, &cont);
+
+        fprintf(fout, "%s", linha);
+        for (int i = 0; i < cont; ++i)
+            fprintf(fout, " %d", pos[i] + 1);
+        fprintf(fout, "\n");
+    }
+
+    fclose(fpads);
+    fclose(fout);
+    free(pos);
+    free(texto);
+
     gettimeofday(&end_time, NULL);
     getrusage(RUSAGE_SELF, &usage_end);
 
-    // Calculando o tempo real (tempo total de execução)
     long seconds = end_time.tv_sec - start_time.tv_sec;
     long microseconds = end_time.tv_usec - start_time.tv_usec;
     if (microseconds < 0) {
@@ -111,18 +92,15 @@ int main(int argc, char *argv[]){
         microseconds += 1000000;
     }
 
-    // Calculando tempo de usuário e sistema
     long user_time_sec = usage_end.ru_utime.tv_sec - usage_start.ru_utime.tv_sec;
     long user_time_usec = usage_end.ru_utime.tv_usec - usage_start.ru_utime.tv_usec;
-
-    long sys_time_sec = usage_end.ru_stime.tv_sec - usage_start.ru_stime.tv_sec;
-    long sys_time_usec = usage_end.ru_stime.tv_usec - usage_start.ru_stime.tv_usec;
-
     if (user_time_usec < 0) {
         user_time_sec--;
         user_time_usec += 1000000;
     }
 
+    long sys_time_sec = usage_end.ru_stime.tv_sec - usage_start.ru_stime.tv_sec;
+    long sys_time_usec = usage_end.ru_stime.tv_usec - usage_start.ru_stime.tv_usec;
     if (sys_time_usec < 0) {
         sys_time_sec--;
         sys_time_usec += 1000000;
@@ -131,10 +109,6 @@ int main(int argc, char *argv[]){
     printf("Tempo Real: %ld.%06ld segundos\n", seconds, microseconds);
     printf("Tempo de Usuário: %ld.%06ld segundos\n", user_time_sec, user_time_usec);
     printf("Tempo de Sistema: %ld.%06ld segundos\n", sys_time_sec, sys_time_usec);
-
-    fclose(fp1);
-    fclose(fp2);
-    fclose(fp_out);
 
     return 0;
 }
