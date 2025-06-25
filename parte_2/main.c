@@ -8,21 +8,23 @@
 
 #include "huffman.h"
 #include "bmh_compressed.h"
+#include "bmh_decompressed.h"
+#include "./utils/file.h"
 
 int main(int argc, char *argv[]){
-    FILE* texto = stdin;
-    FILE* padrao = stdin;
-    FILE* saida = stdin;
-    FILE* comprimido = stdin;
+    FILE* fp_texto = NULL;
+    FILE* fp_padrao = NULL;
+    FILE* fp_saida = NULL;
+    FILE* fp_comprimido = NULL;
 
     struct timeval start_time, end_time;
     gettimeofday(&start_time, NULL);
 
-    int option = 1;
+    // int option = 1;
 
     char* input_file1 = "texto.txt";
-    //char* input_file2 = "entrada2.txt";
-    //char* output_file = "saida.txt";
+    char* pattern_file = "padrao.txt";
+    char* output_file = "saida.txt";
     int opt;
 
     while((opt = getopt(argc, argv, "a:b:o:f:")) > 0){
@@ -31,39 +33,56 @@ int main(int argc, char *argv[]){
                 input_file1 = optarg;
                 break;
             case 'b': 
-                //input_file2 = optarg;
+                pattern_file = optarg;
                 break;
             case 'o':
-                //output_file = optarg;
-                break;
-            case 'f':
-                option = atoi(optarg);
-                if(option == 2){
-                    printf("Shift-And selecionado.\n");
-                }else{
-                    printf("Programação dinâmica selecionado.\n");
-                }
+                output_file = optarg;
                 break;
             default:
-                printf("Entrada inválida, use -a:-b:-o:-f\n");
+                printf("Entrada inválida, use -a:-b:-o\n");
                 return 0;
         }
     }
 
-    texto = fopen(input_file1, "r");
-    comprimido = fopen("comprimido.txt", "w");
-    padrao = fopen("padrao.txt", "w");
-
-    // Comeca a medir o tempo de usuario
+    fp_texto = fopen(input_file1, "r");
+    fp_padrao = fopen(pattern_file, "r");
+    fp_saida = fopen(output_file, "w");
+    fp_comprimido = fopen("comprimido.txt", "w+");
+    char *texto = read_file(input_file1);
+    
+    // Comeca a medir o tempo de usuario //
     struct rusage usage_start, usage_end;
     getrusage(RUSAGE_SELF, &usage_start);
 
-    encode(texto, comprimido);
-    fclose(comprimido);
-    fclose(texto);
-    fclose(padrao);
 
-    // Termina medição
+
+    encode(fp_texto, fp_comprimido); // Comprime o arquivo
+    fflush(fp_comprimido);
+    rewind(fp_comprimido);
+
+    // Linha a linha de padrão
+    char padrao[1024];
+    while(fgets(padrao, sizeof(padrao), fp_padrao) != NULL) {
+        if (strlen(padrao) > 0) {
+            padrao[strcspn(padrao, "\n")] = '\0';
+
+            printf("\nProcurando pelo padrao: %s\n\n", padrao);
+
+            // search_in_compressed(fp_comprimido, padrao); // Busca no arquivo comprimido
+            bmh(padrao, texto, strlen(padrao), strlen(texto), fp_saida); // BMH normal
+        }
+    }
+
+
+
+    fclose(fp_comprimido);
+    fclose(fp_saida);
+    // fclose(fp_texto);
+    fclose(fp_padrao);
+
+
+
+    // Termina medição //
     gettimeofday(&end_time, NULL);
     getrusage(RUSAGE_SELF, &usage_end);
 
