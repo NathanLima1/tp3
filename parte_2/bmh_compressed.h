@@ -1,11 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "./utils/hash-table.h"
+#ifndef BMH_COMPRESSED_H
+#define BMH_COMPRESSED_H
 
-#define MAX_CODE 256
+#include "huffman_header.h"
 
-char* convert_word_to_code(Table* code_table, const char* word);
-int bmh_search(const char* text, const char* pattern);
-void read_code_table(FILE* compressed, Table* code_table);
-void search_in_compressed(FILE* compressed_file, const char* palavra_original);
+int BMH_busca_ocorrencias(unsigned char *T, int n,
+                          unsigned char *P, int m,
+                          int *ocorrencias);
+
+void BuscaMultiplosPadroes(FILE *ArqComprimido, FILE *ArqAlf,
+                            FILE *ArqPadroes, FILE *ArqSaida);
+
+#endif

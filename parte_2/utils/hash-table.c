@@ -19,6 +19,21 @@ unsigned int hash(char *s) {
     return hash;
 }
 
+
+void converte_hash_para_dicionario(Table *hash, TipoDicionario *A, int *n) {
+    int idx = 1;
+    for (int i = 0; i < hash->size; i++) {
+        tableItem *curr = hash->data[i];
+        while (curr) {
+            strcpy(A[idx].simbolo, curr->key);
+            A[idx].Freq = curr->value;
+            idx++;
+            curr = curr->next;
+        }
+    }
+    *n = idx - 1;  // número real de elementos
+}
+
 Table *initTable(int size) {
     Table *t = malloc(sizeof(Table));
     t->data = calloc(size, sizeof(tableItem*));

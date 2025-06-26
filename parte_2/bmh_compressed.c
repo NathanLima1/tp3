@@ -1,83 +1,71 @@
 #include "bmh_compressed.h"
 
-char* convert_word_to_code(Table* code_table, const char* word) {
-    char* encoded = malloc(MAX_CODE * strlen(word));
-    encoded[0] = '\0';
+void BuscaMultiplosPadroes(FILE *ArqComprimido, FILE *ArqAlf,
+                            FILE *ArqPadroes, FILE *ArqSaida) {
+    TipoAlfabeto Alfabeto;
+    TipoVetorPalavra Vocabulario;
+    TipoVetoresBO VetoresBaseOffset;
+    TipoTexto T;
+    TipoPadrao Padrao;
+    char p[256];
+    int MaxCompCod, NumNodosFolhas;
+    int c, Ord, Ind, n = 1;
 
-    for (int i = 0; word[i] != '\0'; i++) {
-        char s[2] = {word[i], '\0'};
-        tableItem* item = get_item(code_table, s);
-        if (!item) {
-            fprintf(stderr, "Caractere '%c' não encontrado na tabela de códigos.\n", word[i]);
-            free(encoded);
-            return NULL;
+    DefineAlfabeto(Alfabeto, ArqAlf);
+    MaxCompCod = LeVetores(ArqComprimido, VetoresBaseOffset);
+    NumNodosFolhas = LeVocabulario(ArqComprimido, Vocabulario);
+
+    // Lê o conteúdo comprimido
+    while (fread(&T[n], sizeof(char), 1, ArqComprimido)) n++;
+
+    rewind(ArqPadroes);
+    while (fgets(p, 256, ArqPadroes)) {
+        p[strcspn(p, "\n")] = '\0'; // remove '\n'
+
+        // Busca palavra no vocabulário
+        Ord = -1;
+        for (Ind = 1; Ind <= NumNodosFolhas; Ind++) {
+            if (!strcmp(Vocabulario[Ind], p)) {
+                Ord = Ind;
+                break;
+            }
         }
-        strcat(encoded, item->valueStr);
-    }
-    return encoded;
-}
 
-int bmh_search(const char* text, const char* pattern) {
-    int n = strlen(text);
-    int m = strlen(pattern);
-    if (m > n) return -1;
+        if (Ord == -1) continue; // não está no vocabulário
 
-    int shift[256];
-    for (int i = 0; i < 256; i++) shift[i] = m;
-    for (int i = 0; i < m - 1; i++) shift[(unsigned char)pattern[i]] = m - 1 - i;
+        int Codigo = Codifica(VetoresBaseOffset, Ord, &c, MaxCompCod);
+        Atribui(Padrao, Codigo, c);
 
-    int i = 0;
-    while (i <= n - m) {
-        int j = m - 1;
-        while (j >= 0 && pattern[j] == text[i + j]) j--;
+        // Busca com BMH
+        int ocorrencias[1000];
+        int qtd = BMH_busca_ocorrencias(T, n, Padrao, c, ocorrencias);
 
-        if (j < 0) return i;  // Encontrado
-
-        i += shift[(unsigned char)text[i + m - 1]];
-    }
-    return -1;  // Não encontrado
-}
-
-void read_code_table(FILE* compressed, Table* code_table){
-    char line[1024];
-
-    while (fgets(line, sizeof(line), compressed)) {
-        if (strcmp(line, "%\n") == 0) break;
-        char* sep = strchr(line, ':');
-        if (sep) {
-            *sep = '\0';
-            char* key = line;
-            char* value = sep + 1;
-            value[strcspn(value, "\n")] = '\0';
-            insert_with_string(code_table, key, value);  // key = letra, value = código
+        fprintf(ArqSaida, "%s", p);
+        for (int i = 0; i < qtd; i++) {
+            fprintf(ArqSaida, " %d", ocorrencias[i]);
         }
+        fprintf(ArqSaida, "\n");
     }
 }
 
-void search_in_compressed(FILE* compressed_file, const char* palavra_original) {
-    Table* code_table = initTable(256);
-    read_code_table(compressed_file, code_table);
+int BMH_busca_ocorrencias(unsigned char *T, int n,
+                          unsigned char *P, int m,
+                          int *ocorrencias) {
+    int i, j, d[MAX_TEXTO], qtd = 0;
 
-    // Converte a palavra original para Huffman
-    char* codificada = convert_word_to_code(code_table, palavra_original);
-    if (!codificada) {
-        freeTable(code_table);
-        return;
+    for (j = 0; j < 256; j++) d[j] = m;
+    for (j = 0; j < m - 1; j++) d[P[j]] = m - j - 1;
+
+    i = m - 1;
+    while (i < n) {
+        int k = 0;
+        while (k < m && P[m - 1 - k] == T[i - k]) k++;
+
+        if (k == m) {
+            ocorrencias[qtd++] = i - m + 1;
+        }
+        i += d[T[i]];
     }
 
-    char texto_comprimido[8192] = {0};
-    size_t read = fread(texto_comprimido, 1, sizeof(texto_comprimido) - 1, compressed_file);
-    if (read == 0) {
-        fprintf(stderr, "Erro: fread não leu dados de compressed_file\n");
-    }
-
-    int pos = bmh_search(texto_comprimido, codificada);
-
-    if (pos != -1)
-        printf("Padrão encontrado na posição %d.\n", pos);
-    else
-        printf("Padrão não encontrado no arquivo comprimido.\n");
-
-    free(codificada);
-    freeTable(code_table);
+    return qtd;
 }

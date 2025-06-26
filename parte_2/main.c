@@ -6,10 +6,14 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include "huffman.h"
-#include "bmh_compressed.h"
 #include "bmh_decompressed.h"
 #include "./utils/file.h"
+#include "compressao.h"
+#include "descompressao.h"
+#include "huffman_header.h"
+#include "huffman_marc.h"
+#include "./utils/tipos.h"
+#include "bmh_compressed.h"
 
 int main(int argc, char *argv[]){
     FILE* fp_texto = NULL;
@@ -20,7 +24,9 @@ int main(int argc, char *argv[]){
     struct timeval start_time, end_time;
     gettimeofday(&start_time, NULL);
 
-    // int option = 1;
+    
+
+    int option = 1;
 
     char* input_file1 = "texto.txt";
     char* pattern_file = "padrao.txt";
@@ -44,6 +50,8 @@ int main(int argc, char *argv[]){
         }
     }
 
+    
+
     fp_texto = fopen(input_file1, "r");
     fp_padrao = fopen(pattern_file, "r");
     fp_saida = fopen(output_file, "w");
@@ -55,27 +63,49 @@ int main(int argc, char *argv[]){
     getrusage(RUSAGE_SELF, &usage_start);
 
 
+    if (option == 1){
+        FILE *arqTxt = fopen("texto.txt", "r");
+        FILE *arqAlf = fopen("alfabeto.txt", "r");
+        FILE *arqComp = fopen("comprimido.bin", "wb");
+        FILE *arqPadroes = fopen("padroes.txt", "r");
+        FILE *arqSaida = fopen("saida.txt", "w");
 
-    encode(fp_texto, fp_comprimido); // Comprime o arquivo
-    fflush(fp_comprimido);
-    rewind(fp_comprimido);
+        if (!arqTxt || !arqAlf || !arqComp || !arqPadroes || !arqSaida) {
+            fprintf(stderr, "Erro ao abrir arquivos\n");
+            return 1;
+        }
 
-    // Linha a linha de padrão
-    char padrao[1024];
-    while(fgets(padrao, sizeof(padrao), fp_padrao) != NULL) {
-        if (strlen(padrao) > 0) {
-            padrao[strcspn(padrao, "\n")] = '\0';
+        // Etapa 1: compressão
+        Compressao(arqTxt, arqAlf, arqComp);
+        fclose(arqTxt);
+        fclose(arqComp);
+        rewind(arqAlf);
 
-            printf("\nProcurando pelo padrao: %s\n\n", padrao);
+        // Etapa 2: busca de padrões
+        arqComp = fopen("comprimido.bin", "rb"); // reabre para leitura
+        BuscaMultiplosPadroes(arqComp, arqAlf, arqPadroes, arqSaida);
+                                                   
+        fclose(arqAlf);
+        fclose(arqComp);
+        fclose(arqPadroes);
+        fclose(arqSaida);
+    }else{
 
-            // search_in_compressed(fp_comprimido, padrao); // Busca no arquivo comprimido
-            bmh(padrao, texto, strlen(padrao), strlen(texto), fp_saida); // BMH normal
+        // Linha a linha de padrão
+        char padrao[1024];
+        while(fgets(padrao, sizeof(padrao), fp_padrao) != NULL) {
+            if (strlen(padrao) > 0) {
+                padrao[strcspn(padrao, "\n")] = '\0';
+
+                printf("\nProcurando pelo padrao: %s\n\n", padrao);
+
+                // search_in_compressed(fp_comprimido, padrao); // Busca no arquivo comprimido
+                bmh(padrao, texto, strlen(padrao), strlen(texto), fp_saida); // BMH normal
+            }
         }
     }
 
 
-
-    fclose(fp_comprimido);
     fclose(fp_saida);
     // fclose(fp_texto);
     fclose(fp_padrao);

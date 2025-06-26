@@ -13,6 +13,13 @@ typedef struct {
     int size;
 } Table;
 
+
+typedef struct {
+    char simbolo[10];  // ou 2, se for caractere
+    int Freq;
+} TipoDicionario;
+
+void converte_hash_para_dicionario(Table *hash, TipoDicionario *A, int *n);
 Table *initTable(int size);
 char *strdup(const char *s);
 void insert(Table *t, char *key); // Adiciona um elemento na tabela e incrementa sua frequência em 1
