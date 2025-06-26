@@ -1,0 +1,2 @@
+palavras:  33 43
+exemplo:  13

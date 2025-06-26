@@ -8,6 +8,7 @@
 #include "levenshtein.h"
 #include "file.h"
 #include "word.h"
+#include "shift_and.h"
 
 #define MAX_PADRAO 256
 
@@ -68,13 +69,17 @@ int main(int argc, char *argv[]) {
         linha[strcspn(linha, "\r\n")] = '\0'; // remove \n ou \r
         if (*linha == '\0') continue;
 
-        int cont = 0;
-        levenshtein(texto, linha, k, pos, &cont);
-
-        fprintf(fout, "%s", linha);
-        for (int i = 0; i < cont; ++i)
-            fprintf(fout, " %d", pos[i] + 1);
-        fprintf(fout, "\n");
+        if (option == 1) {
+            int cont = 0;
+            levenshtein(texto, linha, k, pos, &cont);
+            fprintf(fout, "%s", linha);
+            for (int i = 0; i < cont; ++i)
+                fprintf(fout, " %d", pos[i] + 1);
+            fprintf(fout, "\n");
+        } else if (option == 2) {
+            int m = strlen(linha);
+            shift_and(linha, texto, n, m, k, fout);
+        }
     }
 
     fclose(fpads);
