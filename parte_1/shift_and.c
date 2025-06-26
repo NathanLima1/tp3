@@ -35,16 +35,3 @@ int shift_and(char *s1, char *s2, int n, int m, int k) {
     free(states);
     return 0;
 }
-
-int main() {
-    char *text = "bbbbaabbb\0";
-    char *padrao = "aa";
-
-    int n = strlen(text);
-    int m = strlen(padrao);
-    int k = 1;
-
-    shift_and(text, padrao, n, m, k);
-
-    return 0;
-}
