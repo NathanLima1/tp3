@@ -20,9 +20,10 @@ int main(int argc, char *argv[]) {
     char* input_file2 = "entrada2.txt";
     char* output_file = "saida.txt";
     int option = 1; // 1 = programação dinâmica, 2 = shift-and (ainda não usado)
+    int k = 0;
     int opt;
 
-    while ((opt = getopt(argc, argv, "a:b:o:f:")) > 0) {
+    while ((opt = getopt(argc, argv, "a:b:o:f:k:")) > 0) {
         switch (opt) {
             case 'a': input_file1 = optarg; break;
             case 'b': input_file2 = optarg; break;
@@ -34,8 +35,11 @@ int main(int argc, char *argv[]) {
                 else
                     printf("Programação dinâmica selecionado.\n");
                 break;
+            
+            case 'k': k = atoi(optarg); break;
+
             default:
-                fprintf(stderr, "Uso: %s -a <texto> -b <padroes> -o <saida> -f <1|2>\n", argv[0]);
+                fprintf(stderr, "Uso: %s -a <texto> -b <padroes> -o <saida> -f <1|2> -k <int>\n", argv[0]);
                 return 1;
         }
     }
@@ -56,7 +60,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int k = 0;
     size_t n = strlen(texto);
     int *pos = malloc((n + 1) * sizeof(int));
     if (!pos) {
@@ -78,7 +81,8 @@ int main(int argc, char *argv[]) {
             fprintf(fout, "\n");
         } else if (option == 2) {
             int m = strlen(linha);
-            shift_and(linha, texto, n, m, k, fout);
+            int comp = shift_and(linha, texto, n, m, k, fout);
+            fprintf(fout, "Comparações Shift-And: %d\n", comp);
         }
     }
 
