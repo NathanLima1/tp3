@@ -11,7 +11,8 @@ void PrimeiraEtapa(FILE *ArqTxt, TipoAlfabeto Alfabeto, int *Indice,
 
     do {
         ExtraiProximaPalavra(Palavra, Indice, Linha, ArqTxt, Alfabeto);
-        memcpy(Elemento.Chave, Palavra, sizeof(TipoChave));
+        strncpy(Elemento.Chave, Palavra, MAX_WORD - 1);
+        Elemento.Chave[MAX_WORD - 1] = '\0';
         Elemento.Freq = 1;
 
         if (*Palavra != '\0')
@@ -142,7 +143,7 @@ void Compressao(FILE *ArqTxt, FILE *ArqAlf, FILE *ArqComprimido)
 {
     TipoAlfabeto Alfabeto;
     TipoPalavra Palavra, Linha;
-    int Ind = 1; int MaxCompCod;
+    int Ind = 0; int MaxCompCod;
     TipoDicionario Vocabulario; // = (TipoDicionario)calloc(M+1, sizeof(TipoItem))
     TipoPesos p; TipoVetoresBO VetoresBaseOffset; //(TipoVetoresBO)calloc(MAXTAMVETORESDO+1, sizeof(TipoBaseOffset))
 
@@ -160,9 +161,9 @@ PrimeiraEtapa(ArqTxt, Alfabeto, &Ind,
 MaxCompCod = SegundaEtapa(Vocabulario, VetoresBaseOffset,
                           p, ArqComprimido);
 
-fseek(ArqTxt, 0, SEEK_SET); /* move cursor para inicio do arquivo */
-Ind = 1;
-*Linha = '\0';
+fseek(ArqTxt, 0, SEEK_SET); // MUITO IMPORTANTE: Volta ao início do arquivo de texto
+    Ind = 0;                   // Reinicializa o índice para 0
+    *Linha = '\0';             // Limpa o buffer de linha
 
 TerceiraEtapa(ArqTxt, Alfabeto, &Ind, Palavra, Linha,
               Vocabulario, p, VetoresBaseOffset,

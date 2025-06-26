@@ -19,42 +19,43 @@ void DefineAlfabeto(TipoAlfabeto Alfabeto, FILE* ArqAlf){
 void ExtraiProximaPalavra(TipoPalavra Result, int *Indice, char *Linha,
                           FILE *ArqTxt, TipoAlfabeto Alfabeto)
 {
-    short FimPalavra = FALSE, Aux = FALSE;
-    Result[0] = '\0';
+    int i = 0;
+    Result[0] = '\0'; // Limpa a palavra resultado
 
-    if (*Indice >= strlen(Linha))
-    {
-        if (fgets(Linha, MaxAlfabeto + 1, ArqTxt))
-        {
-            /* Coloca um delimitador em Linha */
-            sprintf(Linha + strlen(Linha), "%c", (char)0);
-            *Indice = 0;
+    // Se a linha atual já foi toda lida, pega a próxima linha do arquivo
+    if (Linha[*Indice] == '\0') {
+        if (fgets(Linha, MaxAlfabeto + 2, ArqTxt) == NULL) {
+            // Se não há mais linhas, retorna (Result continuará vazio)
+            return;
         }
-        else { sprintf(Linha, "%c", (char)0); FimPalavra = TRUE; }
+        *Indice = 0; // Reseta o índice para o início da nova linha
     }
 
-    while (*Indice < strlen(Linha) && !FimPalavra)
-    {
-        if (!Alfabeto[Linha[*Indice] + 127])
-        {
-            if (Aux == FALSE)
-            {
-                Aux = TRUE;
-                sprintf(Result + strlen(Result), "%c", Linha[*Indice]);
-            }
-            else
-            {
-                if (Linha[*Indice - 1] != (char)0) (*Indice)--;
-                else { sprintf(Result + strlen(Result), "%c", Linha[*Indice - 1]); }
-                FimPalavra = TRUE;
-            }
-        }
-        else
-        {
-            sprintf(Result + strlen(Result), "%c", Linha[*Indice]);
-            FimPalavra = TRUE;
-        }
+    // Pula quaisquer separadores no início
+    // (mas apenas se não for a primeira palavra da linha)
+    // Esta parte é complexa, vamos simplificar o tratamento de espaço:
+    // O espaço será um token.
 
+    char char_atual = Linha[*Indice];
+
+    // Caso 1: O caractere atual é um separador (não está no alfabeto)
+    if (char_atual != '\0' && !Alfabeto[char_atual + 127]) {
+        Result[0] = char_atual;
+        Result[1] = '\0';
+        (*Indice)++; // Avança um caractere
+        printf("Palavra (separador) extraida: [%s]\n", Result);
+        return;
+    }
+
+    // Caso 2: O caractere atual pertence ao alfabeto
+    // Lê todos os caracteres sequenciais que pertencem ao alfabeto
+    while ( (char_atual = Linha[*Indice]) != '\0' && Alfabeto[char_atual + 127] ) {
+        if (i < MAX_WORD - 1) {
+            Result[i++] = char_atual;
+        }
         (*Indice)++;
     }
+    Result[i] = '\0'; // Finaliza a string da palavra
+
+    printf("Palavra (texto) extraida: [%s]\n", Result);
 }

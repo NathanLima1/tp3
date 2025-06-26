@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
 
         // Etapa 2: busca de padrões
         arqComp = fopen("comprimido.txt", "rb"); // reabre para leitura
-        BuscaMultiplosPadroes(arqComp, arqAlf, arqPadroes, arqSaida);
+        
                                                    
         fclose(arqAlf);
         fclose(arqComp);
@@ -109,6 +109,7 @@ int main(int argc, char *argv[]){
     fclose(fp_saida);
     // fclose(fp_texto);
     fclose(fp_padrao);
+    free(texto);
 
 
 
