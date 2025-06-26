@@ -1,14 +1,14 @@
 #include "huffman_marc.h"
 
 // Generalização do calculo dos comprimentos dos códigos
-void calculaCompCodigo(TipoDicionario A, int n){
+void CalculaCompCodigo(TipoDicionario A, int n){
     int u = 0; // Nodos internos usados
     int h = 0; // Altura da arvore
     int NoInt; // Numero de nodos internos
 
     int prox, raiz, folha;
     int disp = 1;
-    int x, resto;
+    int x, resto = 0;
 
     if(n > BaseNum -1){
         resto = 1 + ((n-resto)%(BaseNum -1));
@@ -28,7 +28,7 @@ void calculaCompCodigo(TipoDicionario A, int n){
 
     for(prox = n-1; prox >= (n-NoInt)+1; prox--){
         // Procura posição
-        if(folha < 1 || raiz > prox && A[raiz].Freq <= A[folha].Freq){
+        if(folha < 1 || (raiz > prox && A[raiz].Freq <= A[folha].Freq)){
             // Nó interno
             A[prox].Freq = A[raiz].Freq;
             A[raiz].Freq = prox;
@@ -41,7 +41,7 @@ void calculaCompCodigo(TipoDicionario A, int n){
 
         // Atualiza frequencias
         for(x = 1; x <= BaseNum - 1; x++){
-            if(folha < 1 || raiz > prox && A[raiz].Freq < A[folha].Freq){
+            if(folha < 1 || (raiz > prox && A[raiz].Freq < A[folha].Freq)){
                 //No interno
                 A[prox].Freq += A[raiz].Freq;
                 A[raiz].Freq = prox;
@@ -85,7 +85,7 @@ void calculaCompCodigo(TipoDicionario A, int n){
 }
 
 // Codificacao orientada a bytes
-int codifica(TipoVetoresBO vetores_base_offset, int ordem, int*c, int max_com_cod){
+int Codifica(TipoVetoresBO vetores_base_offset, int ordem, int*c, int max_com_cod){
     *c = 1;
     while(ordem > vetores_base_offset[*c + 1].Offset && *c + 1 <= max_com_cod) (*c)++;
 
@@ -93,17 +93,23 @@ int codifica(TipoVetoresBO vetores_base_offset, int ordem, int*c, int max_com_co
 }
 
 // Decodificacao orientada a bytes
-int decodifica(TipoVetoresBO vetores_base_offset, FILE* arq_comprimido, int max_comp_cod){
+int Decodifica(TipoVetoresBO vetores_base_offset, FILE* arq_comprimido, int max_comp_cod){
     int c = 1;
     int codigo = 0, codigo_tmp = 0;
     int log_base2 = (int)round(log(BaseNum)/log(2.0));
-    fread(&codigo, sizeof(unsigned char), 1, arq_comprimido);
+    if (fread(&codigo, sizeof(unsigned char), 1, arq_comprimido) != 1) {
+        fprintf(stderr, "Erro ao ler byte de código\n");
+        return -1; // ou um código de erro apropriado
+    }
 
     codigo -= 128; // remove o bit de marcação
 
     while((c+1 <= max_comp_cod) &&
      ((codigo << log_base2) >= vetores_base_offset[c+1].Base)){
-        fread(&codigo_tmp, sizeof(unsigned char), 1, arq_comprimido);
+        if (fread(&codigo_tmp, sizeof(unsigned char), 1, arq_comprimido) != 1) {
+            fprintf(stderr, "Erro ao ler byte de código temporário\n");
+            break;
+        }
         codigo = (codigo << log_base2) | codigo_tmp;
         c++;
     }
@@ -154,7 +160,10 @@ int ConstroiVetores(TipoVetoresBO VetoresBaseOffset,
 int LeNumInt(FILE *ArqComprimido)
 { 
     int Num;
-    fread(&Num, sizeof(int), 1, ArqComprimido);
+    if(fread(&Num, sizeof(int), 1, ArqComprimido) != 1){
+         fprintf(stderr, "Erro ao ler num\n");
+        return -1;
+    }
     return Num;
 }
 
@@ -221,7 +230,7 @@ void Busca(FILE *ArqComprimido, FILE *ArqAlf)
     TipoPalavra p;
     TipoTexto T;
     TipoPadrao Padrao;
-    int c, Ord, NumNodosFolhas;
+    int c, Ord = 0, NumNodosFolhas;
     int n = 1;
 
     DefineAlfabeto(Alfabeto, ArqAlf);  /* Lê alfabeto definido em arq. */
@@ -232,7 +241,10 @@ void Busca(FILE *ArqComprimido, FILE *ArqAlf)
 
     do {
         printf("Padrao:");
-        fgets(p, MaxAlfabeto + 1, stdin);
+        if (fgets(p, MaxAlfabeto + 1, stdin) == NULL) {
+            fprintf(stderr, "Erro ao ler padrão de entrada\n");
+            continue;
+        }
         p[strlen(p) - 1] = '\0';
 
         for (Ind = 1; Ind <= NumNodosFolhas; Ind++)
@@ -248,8 +260,7 @@ void Busca(FILE *ArqComprimido, FILE *ArqAlf)
 // função para atribuir o código ao padrao
 void Atribui(TipoPadrao P, int Codigo, int c)
 {
-   int i = 1,
-       cTmp = c;
+   int i = 1;
 
    P[i] = (char)((Codigo >> ((c - 1) * 8 - c + 1)) | 0x80);
    i++;  c--;

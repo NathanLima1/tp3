@@ -1,4 +1,5 @@
 folders = obj
+CC = gcc
 CFLAGS = -O3 -Wall
 OBJS = obj/levenshtein.o obj/file.o obj/word.o
 SRCS = main.c

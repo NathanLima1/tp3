@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
         FILE *arqTxt = fopen("texto.txt", "r");
         FILE *arqAlf = fopen("alfabeto.txt", "r");
         FILE *arqComp = fopen("comprimido.bin", "wb");
-        FILE *arqPadroes = fopen("padroes.txt", "r");
+        FILE *arqPadroes = fopen("padrao.txt", "r");
         FILE *arqSaida = fopen("saida.txt", "w");
 
         if (!arqTxt || !arqAlf || !arqComp || !arqPadroes || !arqSaida) {

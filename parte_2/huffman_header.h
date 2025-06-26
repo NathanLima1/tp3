@@ -16,13 +16,6 @@
 
 typedef short  TipoAlfabeto[MaxAlfabeto + 1];
 
-typedef struct {
-   int Base;
-   int Offset;
-} TipoBaseOffset;
-
-typedef TipoBaseOffset  TipoVetoresBO[MaxTamVetoresBO + 1];
-
 typedef char       TipoPalavra[256];
 typedef TipoPalavra TipoVetorPalavra[M + 1];
 
