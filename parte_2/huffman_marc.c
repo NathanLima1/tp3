@@ -56,7 +56,6 @@ void CalculaCompCodigo(TipoDicionario A, int n){
 
     /*Segunda Fase*/
     A[prox + 1].Freq = 0;
-    raiz = prox + 1;
     
     for(prox = raiz + 1; prox <= n; prox++){
         A[prox].Freq = A[A[prox].Freq].Freq + 1;
@@ -87,7 +86,8 @@ void CalculaCompCodigo(TipoDicionario A, int n){
 // Codificacao orientada a bytes
 int Codifica(TipoVetoresBO vetores_base_offset, int ordem, int*c, int max_com_cod){
     *c = 1;
-    while(ordem > vetores_base_offset[*c + 1].Offset && *c + 1 <= max_com_cod) (*c)++;
+    while (*c + 1 <= max_com_cod && ordem > vetores_base_offset[*c + 1].Offset)
+    (*c)++;
 
     return (ordem - vetores_base_offset[*c].Offset + vetores_base_offset[*c].Base);
 }
@@ -102,7 +102,7 @@ int Decodifica(TipoVetoresBO vetores_base_offset, FILE* arq_comprimido, int max_
         return -1; // ou um código de erro apropriado
     }
 
-    codigo -= 128; // remove o bit de marcação
+    if(log_base2 == 7) codigo -= 128; // remove o bit de marcação
 
     while((c+1 <= max_comp_cod) &&
      ((codigo << log_base2) >= vetores_base_offset[c+1].Base)){
@@ -129,6 +129,7 @@ int ConstroiVetores(TipoVetoresBO VetoresBaseOffset,
     for (i = 1; i <= MaxCompCod; i++) {
         Ws[i] = 0; 
         VetoresBaseOffset[i].Offset = 0;
+        VetoresBaseOffset[i].Base = 0;
     }
 
     for (i = 1; i <= n; i++) {

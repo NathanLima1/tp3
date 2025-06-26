@@ -143,8 +143,8 @@ void Compressao(FILE *ArqTxt, FILE *ArqAlf, FILE *ArqComprimido)
     TipoAlfabeto Alfabeto;
     TipoPalavra Palavra, Linha;
     int Ind = 1; int MaxCompCod;
-    TipoDicionario Vocabulario;
-    TipoPesos p; TipoVetoresBO VetoresBaseOffset;
+    TipoDicionario Vocabulario; // = (TipoDicionario)calloc(M+1, sizeof(TipoItem))
+    TipoPesos p; TipoVetoresBO VetoresBaseOffset; //(TipoVetoresBO)calloc(MAXTAMVETORESDO+1, sizeof(TipoBaseOffset))
 
     /* Inicializacao do Alfabeto */
     DefineAlfabeto(Alfabeto, ArqAlf); /* Le alfab. definido em arquivo */

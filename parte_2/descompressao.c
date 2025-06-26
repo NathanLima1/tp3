@@ -47,19 +47,35 @@ int LeVocabulario(FILE *ArqComprimido, TipoVetorPalavra Vocabulario)
     int NumNodosFolhas, i;
     TipoPalavra Palavra;
     char Ch;
+    size_t len;
 
     NumNodosFolhas = LeNumInt(ArqComprimido);
-    for (i = 1; i <= NumNodosFolhas; i++)
-    {
-        *Palavra = '\0';
-        do
-        {
-            fread(&Ch, sizeof(unsigned char), 1, ArqComprimido);
-            if (Ch != (char)0)  /* Palavras separadas pelo caractere 0 */
-                sprintf(Palavra + strlen(Palavra), "%c", Ch);
+
+    for (i = 1; i <= NumNodosFolhas; i++) {
+        Palavra[0] = '\0';
+        len = 0;
+
+        do {
+            if (fread(&Ch, sizeof(unsigned char), 1, ArqComprimido) != 1) {
+                fprintf(stderr, "Erro ao ler caractere do arquivo comprimido.\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if (Ch != (char)0) {
+                if (len < MAX_WORD - 1) {
+                    Palavra[len++] = Ch;
+                } else {
+                    fprintf(stderr, "Erro: palavra excede tamanho máximo (%d).\n", MAX_WORD);
+                    exit(EXIT_FAILURE);
+                }
+            }
         } while (Ch != (char)0);
 
-        strcpy(Vocabulario[i], Palavra);
+        Palavra[len] = '\0';
+
+        // Cópia segura para o vocabulário
+        strncpy(Vocabulario[i], Palavra, MAX_WORD);
+        Vocabulario[i][MAX_WORD - 1] = '\0'; // Garantia de terminação
     }
 
     return NumNodosFolhas;

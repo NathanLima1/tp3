@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
     if (option == 1){
         FILE *arqTxt = fopen("texto.txt", "r");
         FILE *arqAlf = fopen("alfabeto.txt", "r");
-        FILE *arqComp = fopen("comprimido.bin", "wb");
+        FILE *arqComp = fopen("comprimido.txt", "wb");
         FILE *arqPadroes = fopen("padrao.txt", "r");
         FILE *arqSaida = fopen("saida.txt", "w");
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
         rewind(arqAlf);
 
         // Etapa 2: busca de padrões
-        arqComp = fopen("comprimido.bin", "rb"); // reabre para leitura
+        arqComp = fopen("comprimido.txt", "rb"); // reabre para leitura
         BuscaMultiplosPadroes(arqComp, arqAlf, arqPadroes, arqSaida);
                                                    
         fclose(arqAlf);
