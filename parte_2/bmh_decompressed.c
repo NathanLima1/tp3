@@ -3,10 +3,10 @@
 #include <string.h>
 
 void bmh(char *pattern, char *text, int m, int n, FILE *fp) {
-    int skip_table[256];
+    int skip_table[128];
     int found = 0;
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < 128; i++) {
         skip_table[i] = m;
     }
 
