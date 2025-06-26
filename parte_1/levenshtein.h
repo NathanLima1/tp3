@@ -8,4 +8,4 @@ int** init_dp(int m, int n);
 
 void free_dp(int**dp, int n);
 
-void levenshtein(char* text, char* pattern, int k, int *pos, int* cont);
+int levenshtein(char* text, char* pattern, int k, int *pos, int* cont);

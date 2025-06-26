@@ -18,7 +18,8 @@ void free_dp(int**dp, int m){
     free(dp);
 }
 
-void levenshtein(char* text, char* pattern, int k, int *pos, int* cont){
+int levenshtein(char* text, char* pattern, int k, int *pos, int* cont){
+    int comp = 0;
     int n = strlen(text);
     int m = strlen(pattern);
 
@@ -45,6 +46,7 @@ void levenshtein(char* text, char* pattern, int k, int *pos, int* cont){
 
     // Verifica onde o padrão "encaixa" no texto com até k erros
     for(int j = 0; j <= n; j++){
+        comp++;
         if(j >= m && dp[m][j] <= k){
             pos[*cont] = j - m;
             (*cont)++;
@@ -52,4 +54,6 @@ void levenshtein(char* text, char* pattern, int k, int *pos, int* cont){
     }
 
     free_dp(dp, m);
+
+    return comp;
 }

@@ -74,15 +74,16 @@ int main(int argc, char *argv[]) {
 
         if (option == 1) {
             int cont = 0;
-            levenshtein(texto, linha, k, pos, &cont);
+            int comp = levenshtein(texto, linha, k, pos, &cont);
             fprintf(fout, "%s", linha);
             for (int i = 0; i < cont; ++i)
                 fprintf(fout, " %d", pos[i] + 1);
             fprintf(fout, "\n");
+            printf("Comparações Programação Dinâmica: %d\n", comp);
         } else if (option == 2) {
             int m = strlen(linha);
             int comp = shift_and(linha, texto, n, m, k, fout);
-            fprintf(fout, "Comparações Shift-And: %d\n", comp);
+            printf("Comparações Shift-And: %d\n", comp);
         }
     }
 

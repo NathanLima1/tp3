@@ -1,0 +1,35 @@
+
+
+
+Shift-And
+
+
+Shift-And selecionado.
+Comparações Shift-And: 3959550
+Tempo de Usuário: 0.024067 segundos
+Shift-And selecionado.
+Comparações Shift-And: 7919100
+Tempo de Usuário: 0.032386 segundos
+Shift-And selecionado.
+Comparações Shift-And: 11878650
+Tempo de Usuário: 0.051086 segundos
+Shift-And selecionado.
+Comparações Shift-And: 15838200
+Tempo de Usuário: 0.054144 segundos
+
+
+Levenshtein
+
+
+Programação dinâmica selecionado.
+Comparações Programação Dinâmica: 3959551
+Tempo de Usuário: 0.142653 segundos
+Programação dinâmica selecionado.
+Comparações Programação Dinâmica: 3959551
+Tempo de Usuário: 0.178243 segundos
+Programação dinâmica selecionado.
+Comparações Programação Dinâmica: 3959551
+Tempo de Usuário: 0.194566 segundos
+Programação dinâmica selecionado.
+Comparações Programação Dinâmica: 3959551
+Tempo de Usuário: 0.197911 segundos

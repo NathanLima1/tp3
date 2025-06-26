@@ -38,7 +38,7 @@ int shift_and(char *pattern, char *text, int n, int m, int k, FILE *fout) {
     }
 
     fprintf(fout, "\n");
-
     free(states);
+    free(old_states);
     return comp;
 }
