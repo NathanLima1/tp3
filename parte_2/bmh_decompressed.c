@@ -16,7 +16,7 @@ void bmh(char *pattern, char *text, int m, int n, FILE *fp) {
 
     int pos = 0;
 
-    printf("%s: ", pattern);
+    fprintf(fp, "%s: ", pattern);
 
     while (pos <= n - m) {
         int pattern_pos = m - 1;
@@ -26,7 +26,7 @@ void bmh(char *pattern, char *text, int m, int n, FILE *fp) {
         }
 
         if (pattern_pos < 0) {
-            printf("%d ", pos);
+            fprintf(fp, "%d ", pos);
             found = 1;
             pos++;
         } else {
@@ -36,7 +36,7 @@ void bmh(char *pattern, char *text, int m, int n, FILE *fp) {
     }
 
     if (!found) {
-        printf("não encontrado");
+        fprintf(fp, "não encontrado");
     }
-    printf("\n");
+    fprintf(fp, "\n");
 }
