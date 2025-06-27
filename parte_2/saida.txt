@@ -1,0 +1,2 @@
+palavras: 25 35 
+exemplo: 6 
