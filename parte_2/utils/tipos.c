@@ -61,8 +61,14 @@ static int Particao(TipoDicionario A, int esq, int dir)
     int i = esq, j = dir;
     TipoItem x = A[(esq + dir) / 2], w;
     while (i <= j) {
-        while (A[i].Freq > x.Freq) ++i;    
-        while (A[j].Freq < x.Freq) --j;
+        // Se a frequência for a mesma, desempate pela ordem alfabética
+        while (A[i].Freq > x.Freq || (A[i].Freq == x.Freq && strcmp(A[i].Chave, x.Chave) < 0)) {
+            ++i;
+        }
+        while (A[j].Freq < x.Freq || (A[j].Freq == x.Freq && strcmp(A[j].Chave, x.Chave) > 0)) {
+            --j;
+        }
+
         if (i <= j) {
             w = A[i]; A[i] = A[j]; A[j] = w;
             ++i; --j;

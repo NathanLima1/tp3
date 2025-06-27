@@ -11,7 +11,7 @@ void bmh(char *pattern, char *text, int m, int n, FILE *fp) {
     }
 
     for (int i = 0; i < m - 1; i++) {
-        skip_table[pattern[i]] = m - 1 - i;
+        skip_table[(unsigned char)pattern[i]] = m - 1 - i;
     }
 
     int pos = 0;

@@ -173,32 +173,37 @@ void GravaNumInt(FILE *ArqComprimido, int Num)
     fwrite(&Num, sizeof(int), 1, ArqComprimido); 
 }
 
-// Função para ordenar o vocabulario por frequencia
 Indice OrdenaPorFrequencia(TipoDicionario Vocabulario)
 {
-    Indice i; 
-    Indice n = 1;
-    TipoItem Item;
-    Item = Vocabulario[1];
+    // Usa um vetor temporário para garantir que não haja erros ao mover os itens.
+    // É estático para não sobrecarregar a pilha (stack).
+    static TipoItem itensValidos[M + 1];
+    int n = 0; // Contador de palavras únicas encontradas
+    int i;
 
-    for (i = 0; i <= M - 1; i++)
+    // Passo 1: Itera por TODA a tabela de hash e copia os itens que não são vazios
+    // para o nosso vetor temporário.
+    for (i = 0; i <= M; i++)
     {
-        if (strcmp(Vocabulario[i].Chave, Vazio))
+        if (strcmp(Vocabulario[i].Chave, VAZIO) != 0)
         {
-            if (i != 1) {
-                Vocabulario[n] = Vocabulario[i];
-                n++;
-            }
+            itensValidos[n] = Vocabulario[i];
+            n++;
         }
     }
 
-    if (strcmp(Item.Chave, Vazio))
-        Vocabulario[n] = Item;
-    else
-        n--;
+    // Passo 2: Copia os itens válidos e contados de volta para o início do vetor Vocabulario.
+    // O seu QuickSort espera que os dados comecem no índice 1.
+    for (i = 0; i < n; i++)
+    {
+        Vocabulario[i + 1] = itensValidos[i];
+    }
 
+    // Passo 3: Agora, com uma lista limpa e correta, ordena a porção do Vocabulario
+    // que contém os dados (de 1 até n).
     QuickSort(Vocabulario, &n);
 
+    // Passo 4: Retorna a contagem CORRETA de palavras.
     return n;
 }
 

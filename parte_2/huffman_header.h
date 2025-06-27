@@ -9,7 +9,6 @@
 
 #define BaseNum 128 /*Base numerica que o algoritmo trabalha*/
 #define MaxAlfabeto 255 /*Const. usada em ExtraiProximaPalavra*/
-#define MaxTamVetoresBO 10
 #define TRUE 1
 #define FALSE 0
 

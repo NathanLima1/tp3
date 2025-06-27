@@ -48,54 +48,41 @@ int SegundaEtapa (TipoDicionario Vocabulario,
                   TipoPesos p,
                   FILE *ArqComprimido)
 {
-    int Result, i, j, NumNodosFolhas, PosArq;
-    TipoItem Elemento;
+    int Result, i, j, NumNodosFolhas;
     char Ch;
-    TipoPalavra Palavra;
 
+    // Ordena o vocabulário por frequência para preparar para a codificação
     NumNodosFolhas = OrdenaPorFrequencia(Vocabulario);
+    
+    // Calcula os comprimentos dos códigos de Huffman
     CalculaCompCodigo(Vocabulario, NumNodosFolhas);
+    
+    // Constrói e grava os vetores Base e Offset no arquivo
     Result = ConstroiVetores(VetoresBaseOffset, Vocabulario,
                               NumNodosFolhas, ArqComprimido);
 
-    /* Grava Vocabulario */
+    // Grava o número de palavras (nós folhas) no arquivo
     GravaNumInt(ArqComprimido, NumNodosFolhas);
-    PosArq = ftell(ArqComprimido);
 
+    // Grava o Vocabulario (a lista de palavras) no arquivo
     for (i = 1; i <= NumNodosFolhas; i++)
     {
-        j = 1;
-        while (Vocabulario[i].Chave[j - 1] != (char)0)
+        j = 0;
+        // Escreve cada caractere da palavra
+        while (Vocabulario[i].Chave[j] != '\0')
         {
-            fwrite(&Vocabulario[i].Chave[j - 1], sizeof(char),
-                   1, ArqComprimido);
+            fwrite(&Vocabulario[i].Chave[j], sizeof(char), 1, ArqComprimido);
             j++;
         }
-        Ch = (char)0;
+        // Escreve o caractere nulo para marcar o fim da palavra
+        Ch = '\0';
         fwrite(&Ch, sizeof(char), 1, ArqComprimido);
     }
-
-    /* Lê e reconstrói a condicao de hash
-       no vetor que contem o vocabulario */
-    fseek(ArqComprimido, PosArq, SEEK_SET);
-    Inicializa(Vocabulario);
-
-    for (i = 1; i <= NumNodosFolhas; i++)
-    {
-        *Palavra = '\0';
-        do
-        {
-            fread(&Ch, sizeof(char), 1, ArqComprimido);
-            if (Ch != (char)0)
-                sprintf(Palavra + strlen(Palavra), "%c", Ch);
-        } while (Ch != (char)0);
-
-        memcpy(Elemento.Chave, Palavra, sizeof(TipoChave));
-        Elemento.Ordem = i;
-        j = Pesquisa(Elemento.Chave, p, Vocabulario);
-        if (j >= M)
-            Insere(Elemento, p, Vocabulario);
-    }
+    
+    // A complexa e perigosa parte de "releitura" foi REMOVIDA.
+    // A função agora simplesmente escreve o cabeçalho e retorna.
+    // A reconstrução da tabela de hash a partir do arquivo
+    // é responsabilidade do módulo de descompressão/busca.
 
     return Result;
 }

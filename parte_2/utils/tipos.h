@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
 #include <time.h>
 
@@ -22,7 +23,7 @@ typedef TipoItem         TipoDicionario[M + 1];
 typedef unsigned int     TipoPesos[MAX_WORD];
 
 typedef struct { int Base, Offset; } TipoBaseOffset;
-#define MaxTamVetoresBO  10
+#define MaxTamVetoresBO  32
 typedef TipoBaseOffset   TipoVetoresBO[MaxTamVetoresBO + 1];
 
 typedef char             TipoPalavra[MAX_WORD];

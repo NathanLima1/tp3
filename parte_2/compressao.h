@@ -2,6 +2,8 @@
 #define COMPRESSAO_H
 
 #include "huffman_header.h"
+#include "alfabeto.h"
+#include "huffman_marc.h"
 
 void PrimeiraEtapa(FILE *ArqTxt, TipoAlfabeto Alfabeto, int *Indice,
                    TipoPalavra Palavra, char *Linha,
