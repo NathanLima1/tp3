@@ -13,39 +13,34 @@ int main(int argc, char *argv[]){
     FILE* fp_texto = NULL;
     FILE* fp_padrao = NULL;
     FILE* fp_saida = NULL;
-    FILE* fp_comprimido = NULL;
 
     struct timeval start_time, end_time;
     gettimeofday(&start_time, NULL);
-
-    
-
-    int option = 1;
 
     char* input_file1 = "texto.txt";
     char* pattern_file = "padrao.txt";
     char* output_file = "saida.txt";
     int opt;
-
+    
     while((opt = getopt(argc, argv, "a:b:o:f:")) > 0){
         switch(opt){
             case 'a':
-                input_file1 = optarg;
-                break;
+            input_file1 = optarg;
+            break;
             case 'b': 
-                pattern_file = optarg;
-                break;
+            pattern_file = optarg;
+            break;
             case 'o':
-                output_file = optarg;
-                break;
+            output_file = optarg;
+            break;
             default:
-                printf("Entrada inválida, use -a:-b:-o\n");
-                return 0;
+            printf("Entrada inválida, use -a:-b:-o\n");
+            return 0;
         }
     }
 
     
-
+    
     fp_texto = fopen(input_file1, "r");
     fp_padrao = fopen(pattern_file, "r");
     fp_saida = fopen(output_file, "w");
@@ -55,26 +50,21 @@ int main(int argc, char *argv[]){
     struct rusage usage_start, usage_end;
     getrusage(RUSAGE_SELF, &usage_start);
 
-
     // Linha a linha de padrão
     char padrao[1024];
     while(fgets(padrao, sizeof(padrao), fp_padrao) != NULL) {
         if (strlen(padrao) > 0) {
             padrao[strcspn(padrao, "\n")] = '\0';
-
-            printf("\nProcurando pelo padrao: %s\n\n", padrao);
-
-            // search_in_compressed(fp_comprimido, padrao); // Busca no arquivo comprimido
             bmh(padrao, texto, strlen(padrao), strlen(texto), fp_saida); // BMH normal
         }
     }
-    free(texto);
     
 
 
     fclose(fp_saida);
-    // fclose(fp_texto);
     fclose(fp_padrao);
+    fclose(fp_texto);   
+    
     free(texto);
 
 
